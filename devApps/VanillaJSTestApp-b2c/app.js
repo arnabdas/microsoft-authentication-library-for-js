@@ -21,18 +21,16 @@
       cacheLocation: 'localStorage'
     });
 
-  function authCallback(errorDesc, token, error, tokenType) {
+  function authCallback(errorDesc, token, error, tokenType, tokens) {
     logMessage('authCallback called. TokenType: ' + tokenType);
-    if (token && tokenType === 'access_token') {
-      updateUI();
-      localStorage.setItem('access_token', token);
+    if(tokens && tokens['access_token'] && tokens['id_token']) {
+      localStorage.setItem('access_token', tokens['access_token']);
+      localStorage.setItem('id_token', tokens['id_token']);
     }
-    else if (token && tokenType === 'id_token') {
-      login()
-    }
-    else {
+    if (error || errorDesc) {
       logMessage('authCallback: ' + error + ":" + errorDesc);
     }
+    updateUI();
   }
 
   function login() {
@@ -41,7 +39,7 @@
       clientApplication.loginRedirect(applicationConfig.b2cScopes);
     }
     else {
-      clientApplication.acquireTokenSilent(applicationConfig.b2cScopes).then(function (accessToken) {
+      clientApplication.acquireTokenSilent(applicationConfig.b2cScopes, applicationConfig.authority, user).then(function (accessToken) {
         updateUI();
       }, function (error) {
         logMessage("Error acquireTokenSilent:\n" + error);
@@ -75,6 +73,11 @@
   }
 
   function callApi() {
+    var accessToken = localStorage.getItem('access_token');
+    if (accessToken) {
+      callApiWithAccessToken(accessToken);
+      return;
+    }
     clientApplication.acquireTokenSilent(applicationConfig.b2cScopes).then(function (accessToken) {
       callApiWithAccessToken(accessToken);
     }, function (error) {
