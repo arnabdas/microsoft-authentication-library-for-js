@@ -1,0 +1,14 @@
+.hidden {
+  visibility: hidden
+}
+
+.visible {
+  visibility: visible
+}
+
+.response {
+  border: solid;
+  border-width: thin;
+  background-color: azure;
+  padding: 2px;
+}
